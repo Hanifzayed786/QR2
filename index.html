@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Memory Challenge</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #111 0%, #333 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .game {
+            background: rgba(40, 40, 40, 0.95);
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #3399ff;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+        #level {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        #number {
+            font-size: 3rem;
+            margin: 25px 0;
+            letter-spacing: 5px;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        input {
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #555;
+            background: #222;
+            color: white;
+            outline: none;
+            margin-top: 10px;
+            text-align: center;
+            width: 80%;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #3399ff;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            background: #3399ff;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+        button:hover:not(:disabled) {
+            background: #0077ff;
+        }
+        button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* Attractive Rules Section */
+        .instructions {
+            margin-top: 30px;
+            text-align: left;
+            border-top: 1px solid #555;
+            padding-top: 20px;
+            color: #ccc;
+        }
+        .instructions h2 {
+            color: #3399ff;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .instructions ol {
+            padding-left: 20px;
+            list-style: none;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+            padding-left: 10px;
+            position: relative;
+        }
+        .instructions li::before {
+            content: '🧠';
+            position: absolute;
+            left: -15px;
+            font-size: 0.8em;
+            top: 2px;
+        }
+        .instructions strong {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="game">
+        <h1>Number Memory Challenge</h1>
+        <p id="level">Level: 0</p>
+        
+        <div id="number">Press Start</div>
+        
+        <input type="text" id="input" placeholder="Enter sequence" disabled>
+        <br>
+        <button id="main-button">Start</button>
+        <p id="status"></p>
+
+        <div class="instructions">
+            <h2>How to Play 🚀</h2>
+            <ol>
+                <li>Click **Start** to begin the challenge.</li>
+                <li>A sequence of numbers will appear. **Memorize it!** The sequence gets longer each level.</li>
+                <li>After the numbers disappear (`???`), type the exact sequence you saw into the input box.</li>
+                <li>Press **Enter** key or the **Enter Button** below to check your answer.</li>
+                <li>Reach **Level 10** to complete the challenge!</li>
+            </ol>
+        </div>
+        </div>
+    
+    <script>
+        const numberEl = document.getElementById('number');
+        const inputEl = document.getElementById('input');
+        const mainBtn = document.getElementById('main-button'); // Renamed button variable
+        const statusEl = document.getElementById('status');
+        const levelEl = document.getElementById('level');
+
+        let sequence = '';
+        let level = 0;
+        const redirectLevel = 10;
+        let gameState = 'ready'; // 'ready', 'showing', 'input'
+
+        // --- Core Game Flow Functions ---
+
+        function startGame() {
+            sequence = '';
+            level = 0;
+            statusEl.textContent = '';
+            inputEl.value = '';
+            nextLevel();
+        }
+
+        function nextLevel() {
+            level++;
+            levelEl.textContent = `Level: ${level}`;
+            sequence += Math.floor(Math.random() * 10); 
+            showSequence();
+        }
+
+        function showSequence() {
+            gameState = 'showing';
+            inputEl.value = '';
+            inputEl.disabled = true;
+            mainBtn.disabled = true; // Disable button while showing sequence
+            numberEl.textContent = sequence;
+
+            // Display time increases with sequence length
+            const displayTime = 1500 + (Math.floor(sequence.length / 3) * 500);
+
+            setTimeout(() => {
+                numberEl.textContent = '???';
+                inputEl.disabled = false;
+                inputEl.focus();
+                
+                // Transition to Input State
+                gameState = 'input';
+                mainBtn.textContent = 'Enter'; // CHANGE BUTTON TEXT
+                mainBtn.disabled = false; // ENABLE Enter button
+            }, displayTime);
+        }
+
+        function checkAnswer() {
+            // Only check if we are in the input phase
+            if (gameState !== 'input' || inputEl.value === '') return;
+            
+            // Disable input while checking
+            inputEl.disabled = true;
+            mainBtn.disabled = true;
+
+            if (inputEl.value === sequence) {
+                statusEl.textContent = '✅ Correct!';
+                
+                if (level >= redirectLevel) {
+                    statusEl.textContent = '🎉 Level 10 Complete! Redirecting...';
+                    
+                    setTimeout(() => {
+                        window.location.href = "game2.html";
+                    }, 2000); 
+                    return;
+                }
+
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                    nextLevel();
+                }, 1000);
+            } else {
+                statusEl.textContent = `❌ Wrong! The correct sequence was: ${sequence}.`;
+                
+                setTimeout(() => {
+                    statusEl.textContent = 'Restarting...';
+                    // Transition to Ready State
+                    gameState = 'ready';
+                    mainBtn.textContent = 'Start'; // CHANGE BUTTON TEXT
+                    mainBtn.disabled = false; // ENABLE Start button
+                    levelEl.textContent = 'Level: 0';
+                    numberEl.textContent = 'Press Start';
+                }, 2500);
+            }
+        }
+        
+        // --- Event Listeners and Button Logic ---
+
+        // Handle button clicks based on the current game state
+        mainBtn.addEventListener('click', () => {
+            if (gameState === 'ready') {
+                startGame();
+            } else if (gameState === 'input') {
+                checkAnswer();
+            }
+        });
+
+        // Allow Enter key press to submit the answer during the input phase
+        inputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && gameState === 'input') {
+                checkAnswer();
+            }
+        });
+
+        // Initialize button text
+        mainBtn.textContent = 'Start'; 
+        mainBtn.disabled = false; 
+    </script>
+</body>
+</html>
